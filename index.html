@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>Criptografia Mobile</title>
+    <style>
+        :root {
+            --bg: #0A0A0A;
+            --card: #141414;
+            --card-hover: #1F1F1F;
+            --input: #0A0A0A;
+            --primary: #333333;
+            --primary-dark: #1A1A1A;
+            --secondary: #4D4D4D;
+            --success: #2A2A2A;
+            --text: #FFFFFF;
+            --text-muted: #888888;
+            --border: #2A2A2A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 16px;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 20px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .theme-selector {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .theme-btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            background: var(--input);
+            color: var(--text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .theme-btn.active {
+            background: var(--primary);
+            color: var(--bg);
+            border-color: var(--primary);
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: var(--input);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 2;
+        }
+
+        .mode-btn.active {
+            color: var(--text);
+        }
+
+        .mode-slider {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            height: calc(100% - 8px);
+            width: calc(50% - 4px);
+            background: var(--primary);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+            z-index: 1;
+        }
+
+        .mode-slider.right {
+            transform: translateX(100%);
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 16px;
+            background: var(--input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 1rem;
+            font-family: 'SF Mono', monospace;
+            transition: all 0.3s;
+            -webkit-appearance: none;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .symbols-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .symbol-input {
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 12px;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 18px 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 16px;
+        }
+
+        .process-btn:active {
+            transform: scale(0.98);
+        }
+
+        .result-section {
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-box {
+            background: var(--input);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            padding: 8px 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .copy-btn:active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .result-text {
+            font-family: 'SF Mono', monospace;
+            font-size: 1rem;
+            word-break: break-all;
+            line-height: 1.6;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .steps-section {
+            margin-top: 20px;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .step {
+            background: var(--input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+            animation: slideIn 0.4s ease;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .step-result {
+            font-family: 'SF Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            word-break: break-all;
+        }
+
+        @media (max-width: 380px) {
+            h1 { font-size: 1.5rem; }
+            .theme-btn { font-size: 0.75rem; padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Criptografia</h1>
+            <p class="subtitle">4 camadas de seguranca</p>
+        </header>
+
+        <div class="theme-selector">
+            <button class="theme-btn active" onclick="setTheme('dark')" data-theme="dark">Preto</button>
+            <button class="theme-btn" onclick="setTheme('red')" data-theme="red">Vermelho</button>
+            <button class="theme-btn" onclick="setTheme('gold')" data-theme="gold">Amarelo</button>
+        </div>
+
+        <div class="card">
+            <div class="mode-toggle">
+                <div class="mode-slider" id="modeSlider"></div>
+                <button class="mode-btn active" onclick="setMode('encrypt')">Criptografar</button>
+                <button class="mode-btn" onclick="setMode('decrypt')">Descriptografar</button>
+            </div>
+
+            <div class="symbols-row">
+                <div class="input-group">
+                    <label>Simbolo 1</label>
+                    <input type="text" id="symbolOne" class="symbol-input" value="1" maxlength="2">
+                </div>
+                <div class="input-group">
+                    <label>Simbolo 0</label>
+                    <input type="text" id="symbolZero" class="symbol-input" value="0" maxlength="2">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label id="inputLabel">Texto para criptografar</label>
+                <textarea id="inputText" placeholder="Digite seu texto..."></textarea>
+            </div>
+
+            <button class="process-btn" onclick="process()">Processar</button>
+
+            <div class="result-section" id="resultSection">
+                <div class="result-box">
+                    <div class="result-header">
+                        <span class="result-label">Resultado</span>
+                        <button class="copy-btn" onclick="copyResult()">Copiar</button>
+                    </div>
+                    <div class="result-text" id="resultText"></div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <span id="legendOne">1</span> = 1
+                        </div>
+                        <div class="legend-item">
+                            <span id="legendZero">0</span> = 0
+                        </div>
+                    </div>
+                </div>
+
+                <div class="steps-section" id="stepsSection">
+                    <div class="section-title">Etapas</div>
+                    <div id="stepsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const temas = {
+            dark: {
+                "--bg": "#0A0A0A",
+                "--card": "#141414",
+                "--card-hover": "#1F1F1F",
+                "--input": "#0A0A0A",
+                "--primary": "#333333",
+                "--primary-dark": "#1A1A1A",
+                "--secondary": "#4D4D4D",
+                "--success": "#2A2A2A",
+                "--text": "#FFFFFF",
+                "--text-muted": "#888888",
+                "--border": "#2A2A2A"
+            },
+            red: {
+                "--bg": "#000000",
+                "--card": "#2b2b2b",
+                "--card-hover": "#3D2828",
+                "--input": "#1D1616",
+                "--primary": "#D84040",
+                "--primary-dark": "#8E1616",
+                "--secondary": "#FF6B6B",
+                "--success": "#626262",
+                "--text": "#EEEEEE",
+                "--text-muted": "#AAAAAA",
+                "--border": "#d70000"
+            },
+            gold: {
+                "--bg": "#1D1616",
+                "--card": "#2A2520",
+                "--card-hover": "#3D3528",
+                "--input": "#1D1616",
+                "--primary": "#FFD700",
+                "--primary-dark": "#B8860B",
+                "--secondary": "#FFA500",
+                "--success": "#525252",
+                "--text": "#EEEEEE",
+                "--text-muted": "#AAAAAA",
+                "--border": "#8B7355"
+            }
+        };
+
+        let currentMode = 'encrypt';
+        const ALFABETO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        function setTheme(nomeTema) {
+            const tema = temas[nomeTema];
+            if (!tema) return;
+            
+            for (let [variavel, cor] of Object.entries(tema)) {
+                document.documentElement.style.setProperty(variavel, cor);
+            }
+            
+            document.querySelectorAll('.theme-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+                if (btn.dataset.theme === nomeTema) btn.classList.add('active');
+            });
+            
+            localStorage.setItem('tema', nomeTema);
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            const slider = document.getElementById('modeSlider');
+            const label = document.getElementById('inputLabel');
+            
+            if (mode === 'encrypt') {
+                slider.classList.remove('right');
+                label.textContent = 'Texto para criptografar';
+            } else {
+                slider.classList.add('right');
+                label.textContent = 'Texto criptografado';
+            }
+            
+            document.getElementById('resultSection').classList.remove('show');
+        }
+
+        function atbash(texto) {
+            const invertido = ALFABETO.split('').reverse().join('');
+            return texto.toUpperCase().split('').map(function(c) {
+                const idx = ALFABETO.indexOf(c);
+                return idx >= 0 ? invertido[idx] : c;
+            }).join('');
+        }
+
+        function cesar(texto, n) {
+            return texto.split('').map(function(c) {
+                const idx = ALFABETO.indexOf(c);
+                return idx >= 0 ? ALFABETO[(idx + n + 26) % 26] : c;
+            }).join('');
+        }
+
+        function paraBinario(texto) {
+            return texto.split('').map(function(c) {
+                return c.charCodeAt(0).toString(2).padStart(8, '0');
+            }).join('');
+        }
+
+        function deBinario(binario) {
+            let resultado = '';
+            for (let i = 0; i < binario.length; i += 8) {
+                const byte = binario.substring(i, i + 8);
+                if (byte.length === 8) {
+                    resultado += String.fromCharCode(parseInt(byte, 2));
+                }
+            }
+            return resultado;
+        }
+
+        function process() {
+            const input = document.getElementById('inputText').value;
+            const um = document.getElementById('symbolOne').value || '1';
+            const zero = document.getElementById('symbolZero').value || '0';
+            
+            if (!input.trim()) {
+                alert('Digite algum texto!');
+                return;
+            }
+
+            document.getElementById('legendOne').textContent = um;
+            document.getElementById('legendZero').textContent = zero;
+
+            let result, steps = [];
+
+            if (currentMode === 'encrypt') {
+                const step1 = atbash(input);
+                const step2 = cesar(step1, 5);
+                const step3 = paraBinario(step2);
+                const step4 = step3.replace(/1/g, um).replace(/0/g, zero);
+                
+                result = step4;
+                steps = [
+                    { title: 'Atbash', result: step1 },
+                    { title: 'Cesar (+5)', result: step2 },
+                    { title: 'Binario', result: step3.length > 60 ? step3.substring(0, 60) + '...' : step3 },
+                    { title: 'Simbolos', result: step4.length > 60 ? step4.substring(0, 60) + '...' : step4 }
+                ];
+            } else {
+                const step4 = input.split(zero).join('0').split(um).join('1');
+                const step3 = deBinario(step4);
+                const step2 = cesar(step3, -5);
+                const step1 = atbash(step2);
+                
+                result = step1;
+                steps = [
+                    { title: 'Simbolos -> Binario', result: step4.length > 60 ? step4.substring(0, 60) + '...' : step4 },
+                    { title: 'Binario -> Texto', result: step3 },
+                    { title: 'Cesar (-5)', result: step2 },
+                    { title: 'Atbash', result: step1 }
+                ];
+            }
+
+            document.getElementById('resultText').textContent = result;
+            document.getElementById('resultSection').classList.add('show');
+            
+            const stepsList = document.getElementById('stepsList');
+            stepsList.innerHTML = steps.map(function(step) {
+                return '<div class="step">' +
+                    '<div class="step-title">' + step.title + '</div>' +
+                    '<div class="step-result">' + step.result + '</div>' +
+                '</div>';
+            }).join('');
+
+            document.getElementById('stepsSection').style.display = 'block';
+        }
+
+        function copyResult() {
+            const text = document.getElementById('resultText').textContent;
+            navigator.clipboard.writeText(text).then(function() {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = 'Copiado!';
+                setTimeout(function() { btn.textContent = 'Copiar'; }, 2000);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const temaSalvo = localStorage.getItem('tema') || 'dark';
+            setTheme(temaSalvo);
+        });
+
+        document.getElementById('inputText').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') process();
+        });
+    </script>
+</body>
+</html>
